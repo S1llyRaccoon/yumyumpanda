@@ -19,19 +19,19 @@ var bal = {
   },
 
   teken() {
-    fill(255,255,255,1);
+    fill(255,255,255);
     ellipse(this.x,this.y,this.diameter);
   }
 }
 
 class Bom {
   constructor(sprite, stap, snelheid = 5) {
-    this.x = floor(random(0, raster.aantalKolommen)) * raster.celGrootte;
+    this.x = floor(random(1, raster.aantalKolommen)) * raster.celGrootte;
     this.y = floor(random(0, raster.aantalRijen)) * raster.celGrootte;
     this.sprite = sprite;
     this.stapGrootte = stap;
-    this.snelheid = snelheid;  // Willekeurige snelheid voor elke bom
-    this.zin = 1;  // Bepalen naar boven of naar beneden bewegen
+    this.snelheid = snelheid;  // Random snelheid voor elke bom
+    this.zin = 1;  // Bepaalt of bom naar boven of naar beneden beweegt
   }
 
   toon() {
@@ -42,21 +42,20 @@ class Bom {
     // Beweeg de bom op en neer
     this.y += this.snelheid * this.zin;
 
-    // Als de bom de boven- of onderkant bereikt, verander de richting
+    // Als de bom de boven of onder aanraakt, verander de direction
     if (this.y <= 0 || this.y >= canvas.height - raster.celGrootte) {
-      this.zin *= -1;  // Verander de richting van de bom
+      this.zin *= -1;  // Verander de direction van de bom
     }
   }
 }
 
-// De rasterObject klasse (basis voor Jos en Vijand)
 class rasterObject {
   constructor(sprite, stap, snelheid = 5) {
     this.x = floor(random(0, raster.aantalKolommen)) * raster.celGrootte;
     this.y = floor(random(0, raster.aantalRijen)) * raster.celGrootte;
     this.sprite = sprite;
     this.stapGrootte = stap;
-    this.snelheid = snelheid;  // Willekeurige snelheid voor elke bom
+    this.snelheid = snelheid;  // Random snelheid voor  bommen
     this.zin = 1;  // Bepalen naar boven of naar beneden bewegen
   }
 
@@ -125,6 +124,7 @@ class Jos extends rasterObject {
 }
 
 function preload() {
+  brug = loadImage("images/backgrounds/onderwater.png");
   bomPlaatje = loadImage("images/sprites/bom_100px.png");
   evePlaatje = loadImage("images/sprites/Eve100px/Eve_0.png");
   alicePlaatje = loadImage("images/sprites/Alice100px/Alice.png");
@@ -144,9 +144,9 @@ function setup() {
   raster = new Raster(8, 12);  // 12 kolommen, 8 rijen
   raster.berekenCelGrootte();
 
-  // hoeveelheid bommen
+  // aantal bommen
   for (var b = 0; b < 10; b++) {
-    bommenArray.push(new Bom(bomPlaatje, 0));  // Gebruik Bom in plaats van rasterObject
+    bommenArray.push(new Bom(bomPlaatje, 0));  // Gebruik Bom ipv rasterObject
   }
 
   eve = new Jos(evePlaatje, raster.celGrootte);
@@ -156,7 +156,7 @@ function setup() {
 }
 
 function draw() {
-  background(250);
+  background(brug);
 
   raster.teken('black');
 
@@ -187,8 +187,8 @@ function draw() {
   cindy.toon();
 
   if (eve.wordtGeraakt(alice) || eve.wordtGeraakt(bob) || eve.wordtGeraakt(cindy) || eve.staatOp(bommenArray)) {
-    background('blauw');
-    fill('white');
+    background('red');
+    fill('black');
     text("Je hebt verloren!", 30, 300);
     noLoop();
   }
@@ -215,11 +215,11 @@ class Raster {
   teken() {
     push();
     noFill();
-     stroke('crimson');
+     stroke('blue');
     strokeWeight(8);
-    rect(0,0,canvas.width,canvas.height);
+    rect(-1,1,canvas.width,canvas.height);
 
-    stroke('gray');
+    stroke('lightblue');
     strokeWeight(3);
     for (var rij = 0;rij < this.aantalRijen;rij++) {
       for (var kolom = 0;kolom < this.aantalKolommen;kolom++) {
