@@ -1,51 +1,86 @@
+var bal = {
+  diameter: 40,
+  straal: null,
+  x: null,
+  y: null,
+  snelheidX: 8,
+  snelheidY: 5,
+
+  beweeg() {
+    this.x += this.snelheidX;
+    this.y += this.snelheidY;
+
+    if (this.x < this.straal || this.x > canvas.width - this.straal) {
+      this.snelheidX *= -1;
+    }
+    if (this.y < this.straal || this.y > canvas.height - this.straal) {
+      this.snelheidY *= -1;
+    }
+  },
+
+  teken() {
+    fill(255,255,255,1);
+    ellipse(this.x,this.y,this.diameter);
+  }
+}
+*
 class Bom {
-  constructor(sprite,stap) {
-    this.x = floor(random(1,raster.aantalKolommen))*raster.celGrootte;
+  constructor(sprite,stap, snelheid) {
+    this.x = floor(random(0,raster.aantalKolommen))*raster.celGrootte;
     this.y = floor(random(0,raster.aantalRijen))*raster.celGrootte;
     this.sprite = sprite;
     this.stapGrootte = stap;
+    this.snelheid = snelheid; //willekeurige snelheid
+    this.zin = 1; //bepaald omhoog of omlaag
   }
 
   toon() {
     image(this.sprite,this.x,this.y,raster.celGrootte,raster.celGrootte);
+  }
+  
+  beweeg() {
+      this.y += this.snelheid * this.zin;
+    //controleert of de bom de bovenkant of onderkant van het canvas bereikt
+      if (this.y <= 0 || this.y >= canvas.height - raster.celGrootte) {
+        //als de bom de bovenkant of onderkant van het canvas bereikt,
+        this.zin *= -1; //verandert de richting van de beweging
+    }
   }
 }
 
+  class rasterObject {
+    constructor(sprite,stap, snelheid = 5) {
+      this.x = floor(random(0 ,raster.aantalKolommen)) * raster.celGrootte;
+      this.y = floor(random(0 ,raster.aantalRijen)) * raster.celGrootte;
+      this.sprite = sprite;
+      this.stapGrootte = stap;
+      this.snelheid = snelheid; //willekeurige snelheid
+      this.zin = 1; //bepaald omhoog of omlaag
+    }
+
+    toon() {
+      image(this.sprite,this.x,this.y,raster.celGrootte,raster.celGrootte);
+    }
+    
+  }
+
 class Vijand {
-  constructor(sprite,stap) {
-    this.x = floor(random(1,raster.aantalKolommen))*raster.celGrootte;
-    this.y = floor(random(0,raster.aantalRijen))*raster.celGrootte;
-    this.sprite = sprite;
-    this.stapGrootte = stap;    
-  }   
-
-  toon() {
-    image(this.sprite,this.x,this.y,raster.celGrootte,raster.celGrootte);
-  }  
-
   beweeg() {
     this.x += floor(random(-1,2))*this.stapGrootte;
     this.y += floor(random(-1,2))*this.stapGrootte;
 
     this.x = constrain(this.x,0,canvas.width - raster.celGrootte);
     this.y = constrain(this.y,0,canvas.height - raster.celGrootte);
-  }
-}
+    }   
+  }   
 
 class Jos {
   constructor(sprite,stap) {
+    super(sprite,stap)
     this.x = 0;
-    this.y = 200;
-    this.sprite = sprite;
-    this.stapGrootte = stap;
-
     this.gehaald = false;
     this.aanDeBeurt = true;
     this.staOpBom = false;
-  }
-
-  toon() {
-    image(this.sprite,this.x,this.y,raster.celGrootte,raster.celGrootte);
   }
 
   beweeg() {
@@ -109,8 +144,9 @@ function setup() {
   raster = new Raster(8,12);
   raster.berekenCelGrootte();
 
-  for (var b = 0;b < 15;b++) {
-    bommenArray.push(new Bom(bomPlaatje,0));
+  //HOEVEELHEID BOMMEN
+  for (var b = 0;b < 10;b++) {
+    bommenArray.push(new Bom(bomPlaatje,0)); //bom inplaats van rastervak
   }
 
   eve = new Jos(evePlaatje,raster.celGrootte);    
@@ -120,14 +156,20 @@ function setup() {
 
 function draw() {
   background(250);
+  
   raster.teken();
+
+  bal.beweeg();
+  bal.teken('red');
+  
   for (var b = 0;b < bommenArray.length;b++) {
-    bommenArray[b].toon();
+    bommenArray[b].beweeg(); //beweeg bom
+    bommenArray[b].toon(); //toon bom
+  
   }
   if (eve.aanDeBeurt) {
     eve.beweeg();
-  }
-  else {
+  } else {
     alice.beweeg();
     bob.beweeg();
     eve.aanDeBeurt = true;
@@ -167,7 +209,8 @@ class Raster {
   teken() {
     push();
     noFill();
-    stroke('grey');
+    stroke('blue')
+    strokeWeight(8)
     for (var rij = 0;rij<this.aantalRijen;rij++) {
       for (var kolom = 0;kolom<this.aantalKolommen;kolom++) {
         rect(kolom*this.celGrootte,rij*this.celGrootte,this.celGrootte,this.celGrootte);
